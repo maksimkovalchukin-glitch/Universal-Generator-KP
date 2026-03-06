@@ -96,6 +96,19 @@ const state = {
    ІНІЦІАЛІЗАЦІЯ SELECTS
 ====================================================== */
 
+function fillMonitoringSelect() {
+  const sel = document.getElementById("monitoring_device");
+  if (!sel) return;
+  const items = window.CATALOG?.monitoring || [{ name: "Huawei Smart Dongle" }];
+  sel.innerHTML = "";
+  items.forEach(m => {
+    const opt = document.createElement("option");
+    opt.value = m.name;
+    opt.textContent = m.name;
+    sel.appendChild(opt);
+  });
+}
+
 function fillPanelSelects() {
   ["module_type", "manual_module"].forEach(id => {
     const sel = document.getElementById(id);
@@ -1034,6 +1047,8 @@ document.addEventListener("DOMContentLoaded", () => {
   loadManagers();
   fillPanelSelects();
   fillInverterSelects();
+  fillMonitoringSelect();
+  window.addEventListener("catalogReady", fillMonitoringSelect);
 
   // Кнопки навігації
   document.getElementById("btnNext").addEventListener("click", goNext);
