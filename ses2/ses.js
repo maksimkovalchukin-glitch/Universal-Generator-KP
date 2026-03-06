@@ -962,6 +962,25 @@ async function submitKP() {
     manager_email: currentMgr.email || '',
   };
 
+  // Розрахунок цін в браузері (якщо є каталог)
+  if (window.SESCalculateEngine && window.CATALOG) {
+    try {
+      const calcInput = {
+        ...payload,
+        price_vat_type: state.vat === 'with' ? 'з ПДВ' : 'без ПДВ',
+        manager_phone:  currentMgr.phone || '',
+        manager_email:  currentMgr.email || '',
+      };
+      const calc = window.SESCalculateEngine.calculate(calcInput, window.CATALOG);
+      if (calc.ok) {
+        payload.ses_template_vars = calc.template_vars;
+        payload.ses_line_items    = calc.line_items;
+        payload.ses_final_total   = calc.final_total;
+        payload.ses_service_total = calc.service_total;
+      }
+    } catch (e) { /* fallback to n8n calculation */ }
+  }
+
   try {
     await fetch(WEBHOOK_URL, {
       method: "POST",
