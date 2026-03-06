@@ -126,6 +126,25 @@
     },
     {
       "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [{
+            "id": "cond-custom-img",
+            "leftValue": "={{ $('SES: Charts').first().json.has_custom_image }}",
+            "rightValue": true,
+            "operator": { "type": "boolean", "operation": "true", "name": "filter.operator.true" }
+          }],
+          "combinator": "and"
+        }
+      },
+      "id": "s07b",
+      "name": "SES: IF Custom Image",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1680, 200]
+    },
+    {
+      "parameters": {
         "resource": "file",
         "operation": "upload",
         "name": "={{ $json.image_file_name }}",
@@ -997,7 +1016,7 @@
       "typeVersion": 2,
       "position": [
         4800,
-        200
+        420
       ]
     },
     {
@@ -1178,11 +1197,17 @@
       "main": [
         [
           {
-            "node": "SES: Upload Custom Image",
+            "node": "SES: IF Custom Image",
             "type": "main",
             "index": 0
           }
         ]
+      ]
+    },
+    "SES: IF Custom Image": {
+      "main": [
+        [{ "node": "SES: Upload Custom Image", "type": "main", "index": 0 }],
+        [{ "node": "SES: IF Logo", "type": "main", "index": 0 }]
       ]
     },
     "SES: Upload Custom Image": {
