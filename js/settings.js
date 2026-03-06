@@ -2,12 +2,9 @@
    SETTINGS — Адмін-панель управління
 ====================================================== */
 
-const ADMIN_PASSWORD    = '12345';
-const STORAGE_KEY       = 'rayton_managers';
-const SETTINGS_STORAGE  = 'rayton_settings';
-
-const MANAGERS_URL = 'https://n8n.rayton.net/webhook/managers';
-const SETTINGS_URL = 'https://n8n.rayton.net/webhook/ses-settings';
+const ADMIN_PASSWORD   = '12345';
+const STORAGE_KEY      = 'rayton_managers';
+const SETTINGS_STORAGE = 'rayton_settings';
 
 let managers = [];
 
@@ -134,15 +131,12 @@ function switchTab(tab) {
 
 async function loadManagers() {
   try {
-    const res  = await fetch(MANAGERS_URL, { cache: 'no-store' });
-    const data = await res.json();
-    managers   = data.managers || [];
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(managers));
+    const loaded = await window.CatalogAPI.loadManagers();
+    managers = loaded.length ? loaded : DEFAULT_MANAGERS;
   } catch {
     const stored = localStorage.getItem(STORAGE_KEY);
-    managers = stored ? JSON.parse(stored) : [];
+    managers = stored ? JSON.parse(stored) : DEFAULT_MANAGERS;
   }
-  if (!managers.length) managers = DEFAULT_MANAGERS;
   renderList();
 }
 
@@ -216,9 +210,8 @@ async function saveManagers() {
   const status = document.getElementById('saveStatus');
   btn.disabled = true;
   status.textContent = 'Зберігаємо...';
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(managers));
   try {
-    await fetch(MANAGERS_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ managers }) });
+    await window.CatalogAPI.saveManagers(managers);
     status.textContent = '✅ Збережено';
     status.style.color = 'green';
   } catch {
@@ -246,10 +239,7 @@ const TEMPLATE_FIELD_MAP = {
 async function loadTemplates() {
   let settings = {};
   try {
-    const res  = await fetch(SETTINGS_URL, { cache: 'no-store' });
-    const data = await res.json();
-    settings   = data.settings || {};
-    localStorage.setItem(SETTINGS_STORAGE, JSON.stringify(settings));
+    settings = await window.CatalogAPI.loadSettings();
   } catch {
     const stored = localStorage.getItem(SETTINGS_STORAGE);
     if (stored) settings = JSON.parse(stored);
@@ -275,11 +265,9 @@ async function saveTemplates() {
   btn.disabled = true;
   status.textContent = 'Зберігаємо...';
   const settings = readTemplateFields();
-  localStorage.setItem(SETTINGS_STORAGE, JSON.stringify(settings));
   try {
-    const res = await fetch(SETTINGS_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ settings }) });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    status.textContent = '✅ Збережено на сервері';
+    await window.CatalogAPI.saveSettings(settings);
+    status.textContent = '✅ Збережено';
     status.style.color = 'green';
   } catch {
     status.textContent = '⚠️ Збережено локально (сервер недоступний)';
