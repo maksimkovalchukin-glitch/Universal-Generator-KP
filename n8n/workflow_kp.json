@@ -1427,47 +1427,15 @@
     },
     {
       "id": "mgr_m02",
-      "name": "Read Managers Sheet",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4,
+      "name": "Code: Read Managers",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [
         6720,
         200
       ],
       "parameters": {
-        "operation": "read",
-        "documentId": {
-          "__rl": true,
-          "value": "1IgaI0_eE0xY7ljfNh138CA-aYIiFzGJpmu9s2hLV04g",
-          "mode": "id"
-        },
-        "sheetName": {
-          "__rl": true,
-          "value": "Менеджери",
-          "mode": "name"
-        },
-        "options": {
-          "firstRowIsColumnNames": true
-        }
-      },
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "CRED1",
-          "name": "Google Sheets account"
-        }
-      }
-    },
-    {
-      "id": "mgr_m03",
-      "name": "Code: Format Managers",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        6940,
-        200
-      ],
-      "parameters": {
-        "jsCode": "const items = $input.all();\nconst managers = items\n  .filter(item => item.json.name)\n  .map(item => ({\n    name: item.json.name || '',\n    phone: item.json.phone || '',\n    email: item.json.email || '',\n    telegram: (item.json.telegram || '').replace(/^@/, ''),\n    active: String(item.json.active).toUpperCase() === 'TRUE'\n  }));\nreturn [{ json: { managers } }];"
+        "jsCode": "const store = $getWorkflowStaticData('global');\nconst DEFAULT_MANAGERS = [\n  { name: 'Петров Дмитро',   phone: '+38 (063) 847-49-83', email: 'd.petrov@rayton.com.ua',   telegram: 'dpetrov',   active: true },\n  { name: 'Іваненко Олег',   phone: '+38 (067) 123-45-67', email: 'o.ivanenko@rayton.com.ua', telegram: 'oivanenko', active: true },\n];\nconst managers = store.managers && store.managers.length ? store.managers : DEFAULT_MANAGERS;\nreturn [{ json: { managers } }];"
       }
     },
     {
@@ -1519,7 +1487,7 @@
     },
     {
       "id": "mgr_m06",
-      "name": "Code: Prepare Rows",
+      "name": "Code: Save Managers",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -1527,77 +1495,7 @@
         500
       ],
       "parameters": {
-        "jsCode": "const input = $input.first().json;\nconst managers = input.body?.managers || input.managers || [];\n\nconst values = managers.map(m => [\n  m.name || '',\n  m.phone || '',\n  m.email || '',\n  (m.telegram || '').replace(/^@/, ''),\n  m.active ? 'TRUE' : 'FALSE'\n]);\n\nconst SHEET_ID = '1IgaI0_eE0xY7ljfNh138CA-aYIiFzGJpmu9s2hLV04g';\nconst SHEET_ENC = encodeURIComponent('Менеджери');\n\nconst clearUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_ENC}!A2:E200:clear`;\nconst writeUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_ENC}!A2:E?valueInputOption=RAW`;\nconst writeBody = JSON.stringify({\n  range: 'Менеджери!A2:E',\n  majorDimension: 'ROWS',\n  values: values.length ? values : [['', '', '', '', '']]\n});\n\nreturn [{ json: { managers, clearUrl, writeUrl, writeBody } }];"
-      }
-    },
-    {
-      "id": "mgr_m07",
-      "name": "HTTP: Clear Range",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4,
-      "position": [
-        6940,
-        500
-      ],
-      "parameters": {
-        "method": "POST",
-        "url": "={{ $json.clearUrl }}",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "googleSheetsOAuth2Api",
-        "sendBody": true,
-        "specifyBody": "string",
-        "body": "{}",
-        "options": {
-          "headers": {
-            "entries": [
-              {
-                "name": "Content-Type",
-                "value": "application/json"
-              }
-            ]
-          }
-        }
-      },
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "CRED1",
-          "name": "Google Sheets account"
-        }
-      }
-    },
-    {
-      "id": "mgr_m08",
-      "name": "HTTP: Write Rows",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4,
-      "position": [
-        7160,
-        500
-      ],
-      "parameters": {
-        "method": "PUT",
-        "url": "={{ $('Code: Prepare Rows').first().json.writeUrl }}",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "googleSheetsOAuth2Api",
-        "sendBody": true,
-        "specifyBody": "string",
-        "body": "={{ $('Code: Prepare Rows').first().json.writeBody }}",
-        "options": {
-          "headers": {
-            "entries": [
-              {
-                "name": "Content-Type",
-                "value": "application/json"
-              }
-            ]
-          }
-        }
-      },
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "CRED1",
-          "name": "Google Sheets account"
-        }
+        "jsCode": "const input = $input.first().json;\nconst managers = input.body?.managers || input.managers || [];\nconst store = $getWorkflowStaticData('global');\nstore.managers = managers;\nreturn [{ json: { ok: true, count: managers.length } }];"
       }
     },
     {
@@ -1642,47 +1540,15 @@
     },
     {
       "id": "stg_s02",
-      "name": "Read Settings Sheet",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4,
+      "name": "Code: Read Settings",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [
         6720,
         600
       ],
       "parameters": {
-        "operation": "read",
-        "documentId": {
-          "__rl": true,
-          "value": "1IgaI0_eE0xY7ljfNh138CA-aYIiFzGJpmu9s2hLV04g",
-          "mode": "id"
-        },
-        "sheetName": {
-          "__rl": true,
-          "value": "Налаштування",
-          "mode": "name"
-        },
-        "options": {
-          "firstRowIsColumnNames": true
-        }
-      },
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "CRED1",
-          "name": "Google Sheets account"
-        }
-      }
-    },
-    {
-      "id": "stg_s03",
-      "name": "Code: Format Settings",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        6940,
-        600
-      ],
-      "parameters": {
-        "jsCode": "const items = $input.all();\nconst settings = {};\nitems.forEach(item => {\n  const key = item.json.key || '';\n  const val = item.json.value || '';\n  if (key) settings[key.trim()] = String(val).trim();\n});\nreturn [{ json: { settings } }];"
+        "jsCode": "const store = $getWorkflowStaticData('global');\nconst DEFAULT_SETTINGS = {\n  ses_template_no_credit:          '1Ytn9wssFM-Eg_Fy_CXoZ2CKfd-4uamP39tkhrhf5JMs',\n  ses_template_no_credit_no_img:   '1LGbc5siAxP6zg4B87KpInSzHGDK0hYy8bbNDvrPNcp0',\n  ses_template_with_credit:        '15cW_pHFAmXfHgZ6w2Tv_NZYRDTQnE0eV4l6nnbdsfc4',\n  ses_template_with_credit_no_img: '1bbW_s6qWlfrjKlmuhheiFCDRusPvbRZi7wz3E0B1DkA',\n  ses_drive_folder:                '1QSNGUZ9e7CAyeZNMJ3EpEUuyXTaSfTky',\n  ses_credit_page_num:             '2',\n  ses_viz_page_num:                '3',\n  ses_tpl_sector1: '', ses_tpl_sector2: '', ses_tpl_sector3: '',\n  ses_tpl_sector4: '', ses_tpl_sector5: '', ses_tpl_sector6: '',\n  uze_template_id:     '',\n  uze_drive_folder:    '',\n  pdfco_api_key:       '',\n};\nconst settings = (store.settings && Object.keys(store.settings).length) ? store.settings : DEFAULT_SETTINGS;\nreturn [{ json: { settings } }];"
       }
     },
     {
@@ -1734,7 +1600,7 @@
     },
     {
       "id": "stg_s06",
-      "name": "Code: Prepare Settings Rows",
+      "name": "Code: Save Settings",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -1742,33 +1608,7 @@
         900
       ],
       "parameters": {
-        "jsCode": "const input = $input.first().json;\nconst settings = input.body?.settings || input.settings || {};\nconst rows = Object.entries(settings).map(([k, v]) => [k, String(v)]);\nwhile (rows.length < 200) rows.push(['', '']);\nreturn [{ json: { values: rows } }];"
-      }
-    },
-    {
-      "id": "stg_s08",
-      "name": "HTTP: Write Settings Rows",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        6960,
-        900
-      ],
-      "parameters": {
-        "method": "PUT",
-        "url": "https://sheets.googleapis.com/v4/spreadsheets/1IgaI0_eE0xY7ljfNh138CA-aYIiFzGJpmu9s2hLV04g/values/A2:B201?valueInputOption=RAW",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "googleSheetsOAuth2Api",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ { majorDimension: 'ROWS', values: $json.values } }}",
-        "options": {}
-      },
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "CRED1",
-          "name": "Google Sheets account"
-        }
+        "jsCode": "const input = $input.first().json;\nconst settings = input.body?.settings || input.settings || {};\nconst store = $getWorkflowStaticData('global');\nstore.settings = settings;\nreturn [{ json: { ok: true } }];"
       }
     },
     {
@@ -2412,29 +2252,7 @@
       "main": [
         [
           {
-            "node": "Read Managers Sheet",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Read Managers Sheet": {
-      "main": [
-        [
-          {
-            "node": "Code: Format Managers",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Code: Format Managers": {
-      "main": [
-        [
-          {
-            "node": "Respond GET",
+            "node": "Code: Read Managers",
             "type": "main",
             "index": 0
           }
@@ -2445,40 +2263,7 @@
       "main": [
         [
           {
-            "node": "Code: Prepare Rows",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Code: Prepare Rows": {
-      "main": [
-        [
-          {
-            "node": "HTTP: Clear Range",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "HTTP: Clear Range": {
-      "main": [
-        [
-          {
-            "node": "HTTP: Write Rows",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "HTTP: Write Rows": {
-      "main": [
-        [
-          {
-            "node": "Respond POST",
+            "node": "Code: Save Managers",
             "type": "main",
             "index": 0
           }
@@ -2489,29 +2274,7 @@
       "main": [
         [
           {
-            "node": "Read Settings Sheet",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Read Settings Sheet": {
-      "main": [
-        [
-          {
-            "node": "Code: Format Settings",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Code: Format Settings": {
-      "main": [
-        [
-          {
-            "node": "Respond GET Settings",
+            "node": "Code: Read Settings",
             "type": "main",
             "index": 0
           }
@@ -2522,25 +2285,47 @@
       "main": [
         [
           {
-            "node": "Code: Prepare Settings Rows",
+            "node": "Code: Save Settings",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Code: Prepare Settings Rows": {
+    "Code: Read Managers": {
       "main": [
         [
           {
-            "node": "HTTP: Write Settings Rows",
+            "node": "Respond GET",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "HTTP: Write Settings Rows": {
+    "Code: Save Managers": {
+      "main": [
+        [
+          {
+            "node": "Respond POST",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Read Settings": {
+      "main": [
+        [
+          {
+            "node": "Respond GET Settings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code: Save Settings": {
       "main": [
         [
           {
