@@ -5,9 +5,10 @@
 
 (function () {
 
-  const DATA_URL    = 'https://n8n.rayton.net/webhook/kp-data';
-  const SES_STORAGE = 'rayton_catalog';
-  const UZE_STORAGE = 'rayton_uze_catalog';
+  const DATA_URL     = 'https://n8n.rayton.net/webhook/kp-data';
+  const CATALOG_URL  = 'https://n8n.rayton.net/webhook/ses-catalog';
+  const SES_STORAGE  = 'rayton_catalog';
+  const UZE_STORAGE  = 'rayton_uze_catalog';
 
   window.SES_CATALOG = null;
   window.CATALOG     = null;
