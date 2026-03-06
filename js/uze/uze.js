@@ -3,7 +3,6 @@
 ====================================================== */
 
 const N8N_UZE_URL      = 'https://n8n.rayton.net/webhook/kp';
-const MANAGERS_URL     = 'https://n8n.rayton.net/webhook/managers';
 const MANAGERS_STORAGE = 'rayton_managers';
 
 // ── Preview state ───────────────────────────────────────────────
@@ -121,13 +120,10 @@ const DEFAULT_MANAGERS = [
 async function loadManagers() {
   let managers = [];
   try {
-    const res  = await fetch(MANAGERS_URL, { cache: 'no-store' });
-    const data = await res.json();
-    managers   = data.managers || [];
-    if (managers.length) localStorage.setItem(MANAGERS_STORAGE, JSON.stringify(managers));
+    managers = await window.CatalogAPI.loadManagers();
   } catch {
     const stored = localStorage.getItem(MANAGERS_STORAGE);
-    if (stored) managers = JSON.parse(stored);
+    if (stored) try { managers = JSON.parse(stored); } catch {}
   }
   if (!managers.length) managers = DEFAULT_MANAGERS;
 

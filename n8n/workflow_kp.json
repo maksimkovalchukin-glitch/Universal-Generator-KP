@@ -192,6 +192,72 @@
     },
     {
       "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [{
+            "id": "cond-logo",
+            "leftValue": "={{ $('SES: Charts').first().json.has_client_logo }}",
+            "rightValue": true,
+            "operator": { "type": "boolean", "operation": "true", "name": "filter.operator.true" }
+          }],
+          "combinator": "and"
+        }
+      },
+      "id": "s09b_if",
+      "name": "SES: IF Logo",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [2160, 80]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const prep = $('SES: Підготовка зображень').first();\nconst logoData = prep.binary?.clientLogo;\nreturn [{ json: $input.first().json, binary: logoData ? { clientLogo: logoData } : {} }];"
+      },
+      "id": "s09b_code",
+      "name": "SES: Logo Binary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2400, -80]
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "upload",
+        "name": "={{ $('SES: Charts').first().json.logo_file_name }}",
+        "driveId": { "__rl": true, "value": "MyDrive", "mode": "list" },
+        "folderId": { "__rl": true, "value": "={{ $('SES: Calculate').first().json.driveFolderId }}", "mode": "id" },
+        "binaryPropertyName": "clientLogo",
+        "options": {}
+      },
+      "id": "s08b",
+      "name": "SES: Upload Client Logo",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [2640, -80],
+      "credentials": { "googleDriveOAuth2Api": { "id": "CRED2", "name": "Google Drive account" } }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://www.googleapis.com/drive/v3/files/{{ $json.id }}/permissions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDriveOAuth2Api",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "{\"role\":\"reader\",\"type\":\"anyone\"}",
+        "options": { "response": { "response": { "neverError": true } } }
+      },
+      "id": "s09b_http",
+      "name": "SES: Logo Access",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2880, -80],
+      "credentials": { "googleDriveOAuth2Api": { "id": "CRED2", "name": "Google Drive account" } }
+    },
+    {
+      "parameters": {
         "mode": "runOnceForAllItems",
         "jsCode": "const calc = $('SES: Charts').first().json;\n\nlet customImageDriveUrl = null;\nlet clientLogoDriveUrl  = null;\n\ntry {\n  const imageItems = $('SES: Upload Custom Image').all();\n  if (imageItems.length > 0) {\n    const id = imageItems[0].json.id;\n    customImageDriveUrl = `https://drive.google.com/uc?export=view&id=${id}`;\n  }\n} catch (e) {}\n\ntry {\n  const logoItems = $('SES: Upload Client Logo').all();\n  if (logoItems.length > 0) {\n    const id = logoItems[0].json.id;\n    clientLogoDriveUrl = `https://drive.google.com/uc?export=view&id=${id}`;\n  }\n} catch (e) {}\n\nreturn [{\n  json: {\n    ...calc,\n    custom_image_drive_url: customImageDriveUrl,\n    client_logo_drive_url:  clientLogoDriveUrl,\n    template_vars: {\n      ...calc.template_vars,\n      '{{custom_image}}': customImageDriveUrl || '',\n      '{{client_logo}}':  clientLogoDriveUrl  || ''\n    }\n  }\n}];"
       },
@@ -1061,15 +1127,22 @@
       ]
     },
     "SES: Відкрити доступ": {
+      "main": [[{ "node": "SES: IF Logo", "type": "main", "index": 0 }]]
+    },
+    "SES: IF Logo": {
       "main": [
-        [
-          {
-            "node": "SES: Після зображення",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        [{ "node": "SES: Logo Binary", "type": "main", "index": 0 }],
+        [{ "node": "SES: Після зображення", "type": "main", "index": 0 }]
       ]
+    },
+    "SES: Logo Binary": {
+      "main": [[{ "node": "SES: Upload Client Logo", "type": "main", "index": 0 }]]
+    },
+    "SES: Upload Client Logo": {
+      "main": [[{ "node": "SES: Logo Access", "type": "main", "index": 0 }]]
+    },
+    "SES: Logo Access": {
+      "main": [[{ "node": "SES: Після зображення", "type": "main", "index": 0 }]]
     },
     "SES: Після зображення": {
       "main": [

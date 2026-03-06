@@ -21,39 +21,22 @@
     {
       "id": "n03",
       "name": "Settings",
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
       "position": [
         460,
         500
       ],
       "parameters": {
-        "operation": "read",
-        "documentId": {
-          "__rl": true,
-          "value": "1IgaI0_eE0xY7ljfNh138CA-aYIiFzGJpmu9s2hLV04g",
-          "mode": "id"
-        },
-        "sheetName": {
-          "__rl": true,
-          "value": "Налаштування",
-          "mode": "name"
-        },
-        "options": {
-          "firstRowIsColumnNames": true
-        }
-      },
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "CRED1",
-          "name": "Google Sheets account"
-        }
+        "method": "GET",
+        "url": "https://n8n.rayton.net/webhook/kp-data",
+        "options": {}
       }
     },
     {
       "parameters": {
         "mode": "runOnceForAllItems",
-        "jsCode": "const _wh = $('Webhook').first().json;\nconst p = _wh.body ?? _wh;\n\nconst settingsMap = {};\ntry {\n  $('Settings').all().forEach(item => {\n    const key = item.json.key || item.json.col_1 || '';\n    const val = item.json.value || item.json.col_2 || '';\n    if (key) settingsMap[key.trim()] = String(val).trim();\n  });\n} catch (e) {}\n\nconst TEMPLATE_NO_CREDIT_ID          = settingsMap['ses_template_no_credit']          || '1Ytn9wssFM-Eg_Fy_CXoZ2CKfd-4uamP39tkhrhf5JMs';\nconst TEMPLATE_NO_CREDIT_NO_IMG_ID   = settingsMap['ses_template_no_credit_no_img']   || '1LGbc5siAxP6zg4B87KpInSzHGDK0hYy8bbNDvrPNcp0';\nconst TEMPLATE_WITH_CREDIT_ID        = settingsMap['ses_template_with_credit']        || '15cW_pHFAmXfHgZ6w2Tv_NZYRDTQnE0eV4l6nnbdsfc4';\nconst TEMPLATE_WITH_CREDIT_NO_IMG_ID = settingsMap['ses_template_with_credit_no_img'] || '1bbW_s6qWlfrjKlmuhheiFCDRusPvbRZi7wz3E0B1DkA';\nconst DRIVE_PARENT_FOLDER_ID         = settingsMap['ses_drive_folder']                || '1QSNGUZ9e7CAyeZNMJ3EpEUuyXTaSfTky';\n\nconst creditEnabled = p.credit === 'yes';\nconst hasImage      = p.has_image !== 'no';\nlet templateDocId;\nif (creditEnabled) {\n  templateDocId = hasImage ? TEMPLATE_WITH_CREDIT_ID : TEMPLATE_WITH_CREDIT_NO_IMG_ID;\n} else {\n  templateDocId = hasImage ? TEMPLATE_NO_CREDIT_ID : TEMPLATE_NO_CREDIT_NO_IMG_ID;\n}\n\n// template_vars вже розраховані браузером (calculate-engine.js)\nconst templateVars = p.template_vars || {};\n\nreturn [{\n  json: {\n    templateDocId,\n    driveFolderId:  DRIVE_PARENT_FOLDER_ID,\n    fileName:       p.file_name     || ('KP_' + (p.project_name || 'Project') + '.pdf'),\n    docCopyName:    p.doc_copy_name || ('Proposal_' + Date.now()),\n    templateVars,\n    chatId:         p.chat_id,\n    manager:        p.manager,\n    dcKW:           p.dc_kw,\n    projectName:    p.project_name,\n    region:         p.region,\n    managerPhone:   p.manager_phone,\n    managerEmail:   p.manager_email,\n  }\n}];"
+        "jsCode": "const _wh = $('Webhook').first().json;\nconst p = _wh.body ?? _wh;\n\nlet settingsMap = {};\ntry {\n  settingsMap = $('Settings').first().json.settings || {};\n} catch (e) {}\n\n// Шаблон вибирається за сектором клієнта (1–6)\n// payload містить готові ID з налаштувань браузера, settingsMap — fallback з Google Sheets\nconst sector    = String(p.client_sector || '1');\nconst sectorKey = 'ses_tpl_sector' + sector;\nconst templateDocId = p[sectorKey] || settingsMap[sectorKey] || '';\n\nconst DRIVE_PARENT_FOLDER_ID = p.ses_drive_folder || settingsMap['ses_drive_folder'] || '1QSNGUZ9e7CAyeZNMJ3EpEUuyXTaSfTky';\n\nif (!templateDocId) throw new Error('Шаблон для сектора ' + sector + ' не задано. Заповніть налаштування в адмін-панелі.');\n\n// template_vars вже розраховані браузером\nconst templateVars = p.template_vars || {};\n\nreturn [{\n  json: {\n    templateDocId,\n    driveFolderId:  DRIVE_PARENT_FOLDER_ID,\n    fileName:       p.file_name     || ('KP_' + (p.project_name || 'Project') + '.pdf'),\n    docCopyName:    p.doc_copy_name || ('Proposal_' + Date.now()),\n    templateVars,\n    chatId:         p.chat_id,\n    manager:        p.manager,\n    dcKW:           p.dc_kw,\n    projectName:    p.project_name,\n    region:         p.region,\n    managerPhone:   p.manager_phone,\n    managerEmail:   p.manager_email,\n  }\n}];"
       },
       "id": "n04",
       "name": "Code: Calculate",
