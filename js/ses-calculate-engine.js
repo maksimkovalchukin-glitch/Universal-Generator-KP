@@ -393,7 +393,7 @@ window.SESCalculateEngine = (function () {
     tableRows['{{r10_name}}']  = 'Розробка робочого проекту\nДоставка обладнання та матеріалів\nМонтаж конструкцій\nВстановлення панелей\nСпецтехніка та механізми\nЕлектротехнічні роботи\nАвторський нагляд\nПусконаладка';
     tableRows['{{r10_unit}}']  = 'послуга';
     tableRows['{{r10_qty}}']   = '1';
-    tableRows['{{r10_price}}'] = '';
+    tableRows['{{r10_price}}'] = fmtNum(serviceTotal);
     tableRows['{{r10_total}}'] = fmtNum(serviceTotal);
 
     // ─── Економіка ────────────────────────────────────────────────
@@ -501,10 +501,11 @@ window.SESCalculateEngine = (function () {
       '{{manager_name}}':    p.manager || '',
       '{{manager_phone}}':   p.manager_phone || '',
       '{{manager_email}}':   p.manager_email || '',
+      '{{link_phone}}':      p.manager_phone || '',
+      '{{link_email}}':      p.manager_email || 'sales@rayton.com.ua',
       '{{link_site_1}}':     'rayton.com.ua',
       '{{link_site_2}}':     'rayton.com.ua',
       '{{link_youtube}}':    'RaytonSun',
-      '{{link_email}}':      'sales@rayton.com.ua',
       '{{project}}':         p.project_name || '',
       '{{project_address}}': '',
       '{{gps_coords}}':      '',
