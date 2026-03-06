@@ -1321,7 +1321,7 @@
       ],
       "parameters": {
         "mode": "runOnceForAllItems",
-        "jsCode": "const store = $getWorkflowStaticData('global');\nreturn [{ json: {\n  ses_catalog: store.ses_catalog || null,\n  uze_catalog: store.uze_catalog || null,\n  settings:    store.settings    || {},\n  managers:    store.managers    || []\n} }];"
+        "jsCode": "const store = $getWorkflowStaticData('global');\nreturn [{ json: {\n  ses_catalog: store.ses_catalog || store.catalog || null,\n  uze_catalog: store.uze_catalog || null,\n  settings:    store.settings    || {},\n  managers:    store.managers    || []\n} }];"
       }
     },
     {
