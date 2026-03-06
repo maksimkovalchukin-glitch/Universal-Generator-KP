@@ -109,15 +109,6 @@ function getSharedRates() {
 // ── Таби ───────────────────────────────────────────────────────
 
 function switchTab(tab) {
-  ['managers','templates','catalog','uze'].forEach(t => {
-    document.getElementById(`tabContent${t.charAt(0).toUpperCase()+t.slice(1)}`).style.display = t === tab ? '' : 'none';
-    const btn = document.getElementById(`tab${t.charAt(0).toUpperCase()+t.slice(1)}`);
-    if (btn) btn.className = t === tab ? 'active' : '';
-  });
-}
-
-// Fix tab ids mapping
-function switchTab(tab) {
   const tabs = { managers: 'tabContentManagers', templates: 'tabContentTemplates', catalog: 'tabContentCatalog', uze: 'tabContentUZE' };
   const btns = { managers: 'tabManagers', templates: 'tabTemplates', catalog: 'tabCatalog', uze: 'tabUZE' };
   Object.keys(tabs).forEach(t => {

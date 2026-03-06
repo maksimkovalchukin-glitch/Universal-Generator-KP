@@ -1000,19 +1000,16 @@ function showError(msg) {
    ІНІЦІАЛІЗАЦІЯ ПОДІЙ
 ====================================================== */
 
-const SES_MANAGERS_URL     = 'https://n8n.rayton.net/webhook/managers';
 const SES_MANAGERS_STORAGE = 'rayton_managers';
 
 async function loadManagers() {
   let list = [];
   try {
-    const res  = await fetch(SES_MANAGERS_URL, { cache: 'no-store' });
-    const data = await res.json();
-    list = data.managers || [];
+    list = await window.CatalogAPI.loadManagers();
     localStorage.setItem(SES_MANAGERS_STORAGE, JSON.stringify(list));
   } catch {
     const stored = localStorage.getItem(SES_MANAGERS_STORAGE);
-    if (stored) list = JSON.parse(stored);
+    if (stored) try { list = JSON.parse(stored); } catch {}
   }
 
   const active = list.filter(m => m.active !== false);
