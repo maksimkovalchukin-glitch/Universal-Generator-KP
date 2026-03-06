@@ -69,9 +69,9 @@ window.SESCalculateEngine = (function () {
     const isAC    = matType.includes('ac');
 
     const currency     = p.currency || 'USD';
-    const vatMode      = p.price_vat_type === 'без ПДВ' ? 'without' : 'with';
-    const rateEUR      = parseFlt(catalog.rates?.eur_uah) || 43.5;
-    const rateUSD      = parseFlt(catalog.rates?.usd_uah) || 41.2;
+    const vatMode      = (p.price_vat_type === 'без ПДВ' || p.price_vat === 'without') ? 'without' : 'with';
+    const rateEUR      = parseFlt(catalog.eur_rate) || parseFlt(p.rate_eur) || 44.5;
+    const rateUSD      = parseFlt(catalog.usd_rate) || parseFlt(p.rate_usd) || 41.2;
     const currencyRate = currency === 'EUR' ? rateUSD / rateEUR : 1;
     const currSign     = currency === 'EUR' ? '€' : '$';
 
@@ -90,11 +90,12 @@ window.SESCalculateEngine = (function () {
       mountTypes = [{ type: p.mount_type, qty: panelQty }];
     }
 
-    // Визначаємо панельну потужність з каталогу по full_name
+    // Визначаємо панель з каталогу по назві (без префіксу)
+    const panelShortName = (p.module_type || '').replace(/^Фотоелектричні модулі\s*/i, '').trim();
     const panelEntry = (catalog.panels || []).find(
-      pp => pp.full_name === p.module_type
+      pp => pp.name === panelShortName
     );
-    const panelWatt = panelEntry?.watt || parseFlt(p.module_watt) || 620;
+    const panelWatt = parseFlt(p.module_watt) || panelEntry?.watt || 620;
 
     const rangeDC = dcKW <= 100 ? 'small' : 'large';
     const rangeAC = dcKW <= 100 ? 'small' : 'large';
@@ -108,23 +109,25 @@ window.SESCalculateEngine = (function () {
       return `${type}|${(name || '').toLowerCase()}`;
     }
 
-    (catalog.mounting || []).forEach(m => {
-      markupMap.set(mkKey('mounting', m.name), m.markup ?? 2.0);
+    const _matDCInit = dcKW <= 100 ? (catalog.materials_dc_lt100 || []) : (catalog.materials_dc_gt100 || []);
+    const _matACInit = dcKW <= 100 ? (catalog.materials_ac_lt100 || []) : (catalog.materials_ac_gt100 || []);
+    (catalog.mounting_types || []).forEach(m => {
+      markupMap.set(mkKey('mounting', m.name), m.markup ?? 1.7348);
     });
-    (catalog.materials_dc || []).forEach(m => {
-      markupMap.set(mkKey('materials_dc', m.mount_name), m.markup ?? 1.6);
+    _matDCInit.forEach(m => {
+      markupMap.set(mkKey('materials_dc', m.name), m.markup ?? 1.7348);
     });
-    (catalog.materials_ac || []).forEach(m => {
-      markupMap.set(mkKey('materials_ac', m.mount_name), m.markup ?? 1.6);
+    _matACInit.forEach(m => {
+      markupMap.set(mkKey('materials_ac', m.name), m.markup ?? 1.7348);
     });
     (catalog.montage || []).forEach(m => {
-      markupMap.set(mkKey('montage', m.label), m.markup ?? 1.5);
+      markupMap.set(mkKey('montage', m.name), m.markup ?? 1.7348);
     });
     (catalog.tech || []).forEach(m => {
-      markupMap.set(mkKey('tech', m.label), m.markup ?? 1.5);
+      markupMap.set(mkKey('tech', m.name), m.markup ?? 1.7348);
     });
     (catalog.delivery || []).forEach(m => {
-      markupMap.set(mkKey('delivery', m.label), m.markup ?? 1.5);
+      markupMap.set(mkKey('delivery', m.name), m.markup ?? 1.7348);
     });
 
     // Фіксовані категорії (не змінюємо при ітерації)
@@ -167,7 +170,7 @@ window.SESCalculateEngine = (function () {
       // Панелі
       if (panelEntry && panelQty > 0) {
         const dispName = (p.module_type || '').replace(/^Фотоелектричні модулі\s*/i, '').trim();
-        addLine('panel', p.module_type, panelEntry.price_usd, panelEntry.markup,
+        addLine('panel', panelShortName + ' ' + Math.round(panelWatt) + 'Вт', panelEntry.buy_usd, panelEntry.markup,
           panelQty, 'шт.', `Фотогальванічний модуль ${dispName}`);
       }
 
@@ -175,32 +178,32 @@ window.SESCalculateEngine = (function () {
       inverters.forEach(inv => {
         const entry = (catalog.inverters || []).find(i => i.name === inv.model);
         if (!entry) return;
-        addLine('inverter', inv.model, entry.price_usd, entry.markup,
+        addLine('inverter', inv.model, entry.buy_usd, entry.markup,
           inv.qty, 'шт.', `Інвертор ${inv.model}`);
       });
 
       // Моніторинг
       const monEntry = (catalog.monitoring || []).find(m => m.name === p.monitoring_device);
       if (monEntry) {
-        addLine('monitoring', monEntry.name, monEntry.price_usd, monEntry.markup,
+        addLine('monitoring', monEntry.name, monEntry.buy_usd, monEntry.markup,
           1, 'шт.', `Моніторинг ${monEntry.name}`);
       }
 
       // Регулювання потужності
       const prEntry = (catalog.power_regulation || []).find(m => m.name === p.power_regulation);
       if (prEntry) {
-        addLine('power_regulation', prEntry.name, prEntry.price_usd, prEntry.markup,
+        addLine('power_regulation', prEntry.name, prEntry.buy_usd, prEntry.markup,
           1, 'компл.', `Регулювання потужності ${prEntry.name}`);
       }
 
       // Кріплення (зважена ціна по типах)
       let mountSale = 0, mountPurchase = 0, mountTotalQty = 0;
       mountTypes.forEach(mt => {
-        const mEntry = (catalog.mounting || []).find(m => m.name === mt.type);
+        const mEntry = (catalog.mounting_types || []).find(m => m.name === mt.type);
         if (!mEntry || mt.qty <= 0) return;
-        const mu = markupMap.get(mkKey('mounting', mt.type)) ?? mEntry.markup ?? 2.0;
-        mountSale     += mEntry.price_per_panel_usd * mu * mt.qty;
-        mountPurchase += mEntry.price_per_panel_usd * mt.qty;
+        const mu = markupMap.get(mkKey('mounting', mt.type)) ?? mEntry.markup ?? 1.7348;
+        mountSale     += mEntry.buy_usd * mu * mt.qty;
+        mountPurchase += mEntry.buy_usd * mt.qty;
         mountTotalQty += mt.qty;
       });
       if (mountTotalQty > 0) {
@@ -222,19 +225,21 @@ window.SESCalculateEngine = (function () {
         const allocKW = (mt.qty * panelWatt) / 1000;
 
         if (isDC) {
-          const dcEntry = (catalog.materials_dc || []).find(m => m.mount_name === mt.type);
+          const _dcArr = dcKW <= 100 ? (catalog.materials_dc_lt100 || []) : (catalog.materials_dc_gt100 || []);
+          const dcEntry = _dcArr.find(m => m.name === mt.type);
           if (dcEntry) {
-            const price = rangeDC === 'small' ? dcEntry.price_per_kw_small : dcEntry.price_per_kw_large;
-            const mu    = markupMap.get(mkKey('materials_dc', mt.type)) ?? dcEntry.markup ?? 1.6;
+            const price = dcEntry.buy_usd;
+            const mu    = markupMap.get(mkKey('materials_dc', mt.type)) ?? dcEntry.markup ?? 1.7348;
             matSale     += price * mu * allocKW;
             matPurchase += price * allocKW;
           }
         }
         if (isAC) {
-          const acEntry = (catalog.materials_ac || []).find(m => m.mount_name === mt.type);
+          const _acArr = dcKW <= 100 ? (catalog.materials_ac_lt100 || []) : (catalog.materials_ac_gt100 || []);
+          const acEntry = _acArr.find(m => m.name === mt.type);
           if (acEntry) {
-            const price = rangeAC === 'small' ? acEntry.price_per_kw_small : acEntry.price_per_kw_large;
-            const mu    = markupMap.get(mkKey('materials_ac', mt.type)) ?? acEntry.markup ?? 1.6;
+            const price = acEntry.buy_usd;
+            const mu    = markupMap.get(mkKey('materials_ac', mt.type)) ?? acEntry.markup ?? 1.7348;
             matSale     += price * mu * allocKW;
             matPurchase += price * allocKW;
           }
@@ -271,10 +276,10 @@ window.SESCalculateEngine = (function () {
       const techQty      = sesType === 'Наземна' ? dcKW : 1;
 
       function addService(type, catalog_arr, label, qty) {
-        const entry = (catalog_arr || []).find(s => s.label === label);
+        const entry = (catalog_arr || []).find(s => s.name === label);
         if (!entry) return;
         const mu = markupMap.get(mkKey(type, label)) ?? entry.markup ?? 1.5;
-        const price = entry.price_usd || entry.price_per_kw_usd || 0;
+        const price = entry.buy_usd || 0;
         const s   = price * mu * qty;
         const pur = price * qty;
         servicesSale += s;
