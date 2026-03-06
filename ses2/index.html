@@ -35,21 +35,6 @@
       </div>
 
       <div class="field">
-        <label>Емблема клієнта (необов'язково)</label>
-        <div class="img-upload-wrap" id="logoUploadWrap">
-          <input type="file" id="client_logo" accept="image/*" class="img-file-input" />
-          <label for="client_logo" class="img-upload-btn" id="logoUploadBtn">
-            <span class="img-upload-icon">🏢</span>
-            <span id="logoUploadLabel">Додати логотип клієнта</span>
-          </label>
-          <div class="img-preview-wrap" id="logoPreviewWrap" style="display:none">
-            <img id="logoPreview" class="img-preview" alt="Емблема" />
-            <button type="button" class="img-remove-btn" id="logoRemoveBtn">✕ Видалити</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="field">
         <label>Менеджер</label>
         <select id="manager">
           <option value="">Оберіть менеджера</option>
@@ -398,6 +383,23 @@
       </div>
 
       <div class="info-box" id="economyHint" style="display:none"></div>
+
+      <!-- Емблема клієнта -->
+      <div class="field" style="margin-top:4px">
+        <label>Емблема клієнта (необов'язково)</label>
+        <div class="img-upload-wrap" id="logoUploadWrap">
+          <input type="file" id="client_logo" accept="image/*" class="img-file-input" />
+          <label for="client_logo" class="img-upload-btn" id="logoUploadBtn">
+            <span class="img-upload-icon">🏢</span>
+            <span id="logoUploadLabel">Додати логотип клієнта</span>
+          </label>
+          <div class="img-preview-wrap" id="logoPreviewWrap" style="display:none">
+            <img id="logoPreview" class="img-preview" alt="Емблема" />
+            <button type="button" class="img-remove-btn" id="logoRemoveBtn">✕ Видалити</button>
+          </div>
+        </div>
+        <div class="field-hint">Буде вставлена в КП замість placeholder {{client_logo}}</div>
+      </div>
 
       <!-- Візуалізація СЕС -->
       <div class="field" style="margin-top:4px">
