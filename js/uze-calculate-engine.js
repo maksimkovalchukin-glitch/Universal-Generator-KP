@@ -108,7 +108,7 @@ window.UZECalculateEngine = (function () {
       '{{manager_email}}':       p.manager_email || '',
       '{{project_title}}':       p.project_name  || '',
       '{{today_date}}':          todayStr,
-      '{{uze_unit}}':            model.description || model.name,
+      '{{uze_unit}}':            model.unit || 'шт.',
       '{{uze_qty}}':             String(qty),
       '{{currency}}':            currSign,
       '{{vat_label}}':           vatUZE,
