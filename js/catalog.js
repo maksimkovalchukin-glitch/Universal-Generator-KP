@@ -30,6 +30,16 @@
         localStorage.setItem(SES_STORAGE, JSON.stringify(data.ses_catalog));
         return;
       }
+      // Якщо kp-data не має каталогу — спробувати ses-catalog напряму
+      const res2 = await fetch(CATALOG_URL, { cache: 'no-store' });
+      const data2 = await res2.json();
+      const cat = data2.catalog || data2;
+      if (cat && cat.panels) {
+        window.SES_CATALOG = cat;
+        window.CATALOG     = cat;
+        localStorage.setItem(SES_STORAGE, JSON.stringify(cat));
+        return;
+      }
     } catch { /* fallback below */ }
 
     const stored = localStorage.getItem(SES_STORAGE);
@@ -92,7 +102,18 @@
   async function loadManagers() {
     try {
       const data = await fetchAll();
-      if (data.managers?.length) return data.managers;
+      if (data.managers?.length) {
+        localStorage.setItem('rayton_managers', JSON.stringify(data.managers));
+        return data.managers;
+      }
+      // Якщо kp-data не має менеджерів — спробувати ses-managers напряму
+      const res2 = await fetch('https://n8n.rayton.net/webhook/ses-managers', { cache: 'no-store' });
+      const data2 = await res2.json();
+      const mgrs = data2.managers || data2;
+      if (Array.isArray(mgrs) && mgrs.length) {
+        localStorage.setItem('rayton_managers', JSON.stringify(mgrs));
+        return mgrs;
+      }
     } catch { }
     const stored = localStorage.getItem('rayton_managers');
     return stored ? JSON.parse(stored) : [];
