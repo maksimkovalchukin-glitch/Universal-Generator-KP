@@ -435,6 +435,9 @@ window.SESCalculateEngine = (function () {
     }
     totalProfit25 = Math.round(totalProfit25);
 
+    // 30-річний дохід (для поля "Загальний дохід підприємства")
+    const totalProfit30 = Math.round(totalGen30 * SELF_CONSUMPTION * tariffNow);
+
     // ─── Кредит ───────────────────────────────────────────────────
 
     let creditVars = {
@@ -510,13 +513,13 @@ window.SESCalculateEngine = (function () {
       '{{project_address}}': '',
       '{{gps_coords}}':      '',
       '{{placement_type}}':  sesType,
-      '{{cost_build}}':      fmtNum(dcKW > 0 ? finalTotal / dcKW : 0),
+      '{{cost_build}}':      dcKW > 0 ? Math.round(finalTotal / dcKW).toLocaleString('uk-UA') + ' ' + currSign + '/кВт' : '—',
       '{{power1}}':          powerLabel,
       '{{payback}}':         paybackStr,
-      '{{yearly_gen}}':      `${Math.round(yearlyKWhBase / 1000)} тис. кВт·год`,
-      '{{total_costG}}':     fmtNum(finalTotal),
-      '{{total_cost}}':      fmtNum(finalTotal),
-      '{{total_profit}}':    `${Math.round(totalProfit25 / 1000)} тис. грн`,
+      '{{yearly_gen}}':      `${(yearlyKWhBase / 1000).toFixed(1)} МВт·год`,
+      '{{total_costG}}':     Math.round(totalUAH).toLocaleString('uk-UA') + ' грн',
+      '{{total_cost}}':      Math.round(finalTotal).toLocaleString('uk-UA') + ' ' + currSign,
+      '{{total_profit}}':    tariffNow > 0 ? `${Math.round(totalProfit30 / 1000).toLocaleString('uk-UA')} тис. грн` : '—',
       '{{tariff_now}}':      tariffNow ? `${tariffNow.toFixed(2)} грн/кВт·год` : '',
       '{{tariff_fixed}}':    fixedTariff ? `${fixedTariff.toFixed(4)} грн/кВт·год` : '',
       ...creditVars,
