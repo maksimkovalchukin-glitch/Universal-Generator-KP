@@ -521,7 +521,7 @@ window.SESCalculateEngine = (function () {
       '{{total_cost}}':      Math.round(finalTotal).toLocaleString('uk-UA') + ' ' + currSign,
       '{{total_profit}}':    tariffNow > 0 ? `${Math.round(totalProfit30 / 1000).toLocaleString('uk-UA')} тис. грн` : '—',
       '{{tariff_now}}':      tariffNow ? `${tariffNow.toFixed(2)} грн/кВт·год` : '',
-      '{{tariff_fixed}}':    fixedTariff ? `${fixedTariff.toFixed(4)} грн/кВт·год` : '',
+      '{{tariff_fixed}}':    fixedTariff ? `${fixedTariff.toFixed(2)} грн/кВт·год` : '',
       ...creditVars,
       ...tableRows,
     };
