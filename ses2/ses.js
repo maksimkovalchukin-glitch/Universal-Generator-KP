@@ -887,22 +887,6 @@ async function submitKP() {
     email: managerOpt?.dataset?.email || '',
   };
 
-  // DEBUG: показати дані менеджера прямо на екрані
-  {
-    const lines = [
-      `name: ${currentMgr.name || '❌ пусто'}`,
-      `phone: ${currentMgr.phone || '❌ НЕ ЗНАЙДЕНО'}`,
-      `email: ${currentMgr.email || '❌ НЕ ЗНАЙДЕНО'}`,
-    ];
-    const dbg = document.getElementById('debugBox') || (() => {
-      const el = document.createElement('div');
-      el.id = 'debugBox';
-      el.style.cssText = 'background:#1a1a2e;color:#eee;font-size:12px;padding:10px 14px;margin:8px 16px;border-radius:8px;white-space:pre;border:1px solid #444;font-family:monospace;';
-      document.querySelector('.app').prepend(el);
-      return el;
-    })();
-    dbg.textContent = '🔍 DEBUG менеджер:\n' + lines.join('\n');
-  }
 
   const panelLabel = state.mode === "manual"
     ? PANELS.find(p => p.name === val("manual_module"))?.label || ""
@@ -1097,20 +1081,6 @@ async function loadManagers() {
   sesManagersCache = active; // зберігаємо для submitKP
   if (!active.length) return; // залишаємо хардкод з HTML
 
-  // DEBUG: показати дані менеджерів на екрані
-  {
-    const lines = active.map(m =>
-      `${m.name}: phone=${m.phone || '❌'} email=${m.email || '❌'}`
-    );
-    const dbg = document.getElementById('debugMgr') || (() => {
-      const el = document.createElement('div');
-      el.id = 'debugMgr';
-      el.style.cssText = 'background:#0d1b2a;color:#ccc;font-size:11px;padding:8px 14px;margin:8px 16px;border-radius:8px;white-space:pre;border:1px solid #333;font-family:monospace;';
-      document.querySelector('.app').prepend(el);
-      return el;
-    })();
-    dbg.textContent = '🔍 DEBUG менеджери з n8n:\n' + lines.join('\n');
-  }
 
   const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
   const sel    = document.getElementById('manager');
