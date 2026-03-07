@@ -174,9 +174,8 @@
           "value": "={{ $('SES: Calculate').first().json.driveFolderId }}",
           "mode": "id"
         },
-        "options": {
-          "binaryPropertyName": "customImage"
-        }
+        "options": {},
+        "inputDataFieldName": "customImage"
       },
       "id": "e0e86fc1-7f85-42a9-a71e-67508f374c0a",
       "name": "SES: Upload Custom Image",
@@ -284,9 +283,8 @@
           "value": "={{ $('SES: Calculate').first().json.driveFolderId }}",
           "mode": "id"
         },
-        "options": {
-          "binaryPropertyName": "clientLogo"
-        }
+        "options": {},
+        "inputDataFieldName": "clientLogo"
       },
       "id": "14443921-a84b-4131-bb5d-582fce918ab2",
       "name": "SES: Upload Client Logo",
