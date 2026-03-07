@@ -1036,22 +1036,22 @@ const SES_MANAGERS_STORAGE = 'rayton_managers';
 let sesManagersCache = []; // зберігаємо в пам'яті — не залежимо від перезапису localStorage
 
 async function loadManagers() {
+  // Читаємо localStorage ДО запиту до n8n — CatalogAPI може його перезаписати
+  let existingList = [];
+  try { existingList = JSON.parse(localStorage.getItem(SES_MANAGERS_STORAGE) || '[]'); } catch {}
+  const existingHasContacts = existingList.some(m => m.phone || m.email);
+
   let list = [];
   try {
     list = await window.CatalogAPI.loadManagers();
-    // Зберігаємо в localStorage тільки якщо отримали повніші дані
-    const stored = localStorage.getItem(SES_MANAGERS_STORAGE);
-    const localList = stored ? JSON.parse(stored) : [];
-    const hasPhone = list.some(m => m.phone || m.email);
-    const localHasPhone = localList.some(m => m.phone || m.email);
-    if (hasPhone || !localHasPhone) {
+    const fetchedHasContacts = list.some(m => m.phone || m.email);
+    // Якщо n8n повернув дані без контактів, але в localStorage були — відновлюємо
+    if (!fetchedHasContacts && existingHasContacts) {
+      list = existingList;
       localStorage.setItem(SES_MANAGERS_STORAGE, JSON.stringify(list));
-    } else {
-      list = localList; // локальні дані повніші — використовуємо їх
     }
   } catch {
-    const stored = localStorage.getItem(SES_MANAGERS_STORAGE);
-    if (stored) try { list = JSON.parse(stored); } catch {}
+    list = existingList;
   }
 
   const active = list.filter(m => m.active !== false);
