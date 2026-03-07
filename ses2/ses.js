@@ -878,7 +878,7 @@ async function submitKP() {
   // Налаштування з localStorage (адмін-панель)
   const settings  = JSON.parse(localStorage.getItem('rayton_settings') || '{}');
   const rates     = JSON.parse(localStorage.getItem('rayton_rates')    || '{}');
-  const allMgrs   = JSON.parse(localStorage.getItem('rayton_managers') || '[]');
+  const allMgrs   = sesManagersCache.length ? sesManagersCache : JSON.parse(localStorage.getItem('rayton_managers') || '[]');
   const currentMgr = allMgrs.find(m => m.name === val("manager")) || {};
 
   const panelLabel = state.mode === "manual"
@@ -1033,18 +1033,29 @@ function showError(msg) {
 ====================================================== */
 
 const SES_MANAGERS_STORAGE = 'rayton_managers';
+let sesManagersCache = []; // зберігаємо в пам'яті — не залежимо від перезапису localStorage
 
 async function loadManagers() {
   let list = [];
   try {
     list = await window.CatalogAPI.loadManagers();
-    localStorage.setItem(SES_MANAGERS_STORAGE, JSON.stringify(list));
+    // Зберігаємо в localStorage тільки якщо отримали повніші дані
+    const stored = localStorage.getItem(SES_MANAGERS_STORAGE);
+    const localList = stored ? JSON.parse(stored) : [];
+    const hasPhone = list.some(m => m.phone || m.email);
+    const localHasPhone = localList.some(m => m.phone || m.email);
+    if (hasPhone || !localHasPhone) {
+      localStorage.setItem(SES_MANAGERS_STORAGE, JSON.stringify(list));
+    } else {
+      list = localList; // локальні дані повніші — використовуємо їх
+    }
   } catch {
     const stored = localStorage.getItem(SES_MANAGERS_STORAGE);
     if (stored) try { list = JSON.parse(stored); } catch {}
   }
 
   const active = list.filter(m => m.active !== false);
+  sesManagersCache = active; // зберігаємо для submitKP
   if (!active.length) return; // залишаємо хардкод з HTML
 
   const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
