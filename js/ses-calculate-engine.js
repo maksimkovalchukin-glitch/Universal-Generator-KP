@@ -511,7 +511,7 @@ window.SESCalculateEngine = (function () {
       '{{link_site_2}}':     'rayton.com.ua',
       '{{link_youtube}}':    'RaytonSun',
       '{{project}}':         p.project_name || '',
-      '{{project_address}}': '',
+      '{{project_address}}': p.region || '',
       '{{gps_coords}}':      '',
       '{{placement_type}}':  sesType,
       '{{cost_build}}':      dcKW > 0 ? Math.round(finalTotal / dcKW).toLocaleString('uk-UA') + ' ' + currSign + '/кВт' : '—',
