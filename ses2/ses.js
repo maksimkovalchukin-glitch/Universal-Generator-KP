@@ -878,10 +878,11 @@ async function submitKP() {
   // Налаштування з localStorage (адмін-панель)
   const settings  = JSON.parse(localStorage.getItem('rayton_settings') || '{}');
   const rates     = JSON.parse(localStorage.getItem('rayton_rates')    || '{}');
-  // Читаємо phone/email з DOM (dataset) — як в UZE, не залежить від localStorage
+  // Читаємо name/phone/email з DOM (dataset) — як в UZE, не залежить від localStorage
   const managerSel = document.getElementById('manager');
   const managerOpt = managerSel?.options[managerSel.selectedIndex];
   const currentMgr = {
+    name:  managerOpt?.dataset?.name  || val("manager"),
     phone: managerOpt?.dataset?.phone || '',
     email: managerOpt?.dataset?.email || '',
   };
@@ -894,6 +895,7 @@ async function submitKP() {
     calculation_mode:   state.mode,
     project_name:       val("project_name"),
     manager:            val("manager"),
+    manager_name:       currentMgr.name,
     region:             val("region"),
     client_sector:      val("client_sector"),
 
@@ -973,6 +975,7 @@ async function submitKP() {
       const calcInput = {
         ...payload,
         price_vat_type: state.vat === 'with' ? 'з ПДВ' : 'без ПДВ',
+        manager_name:   currentMgr.name  || '',
         manager_phone:  currentMgr.phone || '',
         manager_email:  currentMgr.email || '',
       };
@@ -1070,6 +1073,7 @@ async function loadManagers() {
     const opt         = document.createElement('option');
     opt.value         = m.name;
     opt.textContent   = m.name;
+    opt.dataset.name  = m.name;
     opt.dataset.phone = m.phone || '';
     opt.dataset.email = m.email || '';
     if (tgUser?.username && m.telegram && tgUser.username.toLowerCase() === m.telegram.toLowerCase()) {

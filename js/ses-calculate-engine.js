@@ -501,7 +501,7 @@ window.SESCalculateEngine = (function () {
       '{{today_date}}':      today,
       '{{currency}}':        currSign,
       '{{power}}':           powerStr,
-      '{{manager_name}}':    p.manager || '',
+      '{{manager_name}}':    p.manager_name || p.manager || '',
       '{{manager_phone}}':   p.manager_phone || '',
       '{{manager_email}}':   p.manager_email || '',
       '{{link_phone}}':      p.manager_phone || '',
