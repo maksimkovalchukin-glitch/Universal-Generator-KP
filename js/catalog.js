@@ -24,6 +24,11 @@
   async function loadSES() {
     try {
       const data = await fetchAll();
+      // Одночасно зберігаємо UZE каталог з тієї ж відповіді
+      if (data.uze_catalog) {
+        window.UZE_CATALOG = data.uze_catalog;
+        localStorage.setItem(UZE_STORAGE, JSON.stringify(data.uze_catalog));
+      }
       if (data.ses_catalog) {
         window.SES_CATALOG = data.ses_catalog;
         window.CATALOG     = data.ses_catalog;
