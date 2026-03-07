@@ -887,6 +887,16 @@ async function submitKP() {
     email: managerOpt?.dataset?.email || '',
   };
 
+  // DEBUG: перевірка менеджера
+  console.group('📋 DEBUG submitKP — менеджер');
+  console.log('selectedIndex:', managerSel?.selectedIndex);
+  console.log('option.value:', managerOpt?.value);
+  console.log('option.dataset:', JSON.stringify(managerOpt?.dataset || {}));
+  console.log('currentMgr:', JSON.stringify(currentMgr));
+  if (!currentMgr.phone) console.warn('⚠️ manager_phone НЕ ЗНАЙДЕНО — phone буде пустим в КП');
+  if (!currentMgr.email) console.warn('⚠️ manager_email НЕ ЗНАЙДЕНО — email буде пустим в КП');
+  console.groupEnd();
+
   const panelLabel = state.mode === "manual"
     ? PANELS.find(p => p.name === val("manual_module"))?.label || ""
     : PANELS.find(p => p.name === val("module_type"))?.label || "";
@@ -1065,6 +1075,17 @@ async function loadManagers() {
   const active = list.filter(m => m.active !== false);
   sesManagersCache = active; // зберігаємо для submitKP
   if (!active.length) return; // залишаємо хардкод з HTML
+
+  // DEBUG: перевірка завантажених менеджерів
+  console.group('📋 DEBUG loadManagers — завантажені менеджери');
+  active.forEach(m => {
+    const hasPhone = !!m.phone;
+    const hasEmail = !!m.email;
+    console.log(`${m.name}: phone=${m.phone || '❌ ПУСТО'}, email=${m.email || '❌ ПУСТО'}`);
+    if (!hasPhone) console.warn(`⚠️ Менеджер "${m.name}" не має phone в каталозі`);
+    if (!hasEmail) console.warn(`⚠️ Менеджер "${m.name}" не має email в каталозі`);
+  });
+  console.groupEnd();
 
   const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
   const sel    = document.getElementById('manager');
