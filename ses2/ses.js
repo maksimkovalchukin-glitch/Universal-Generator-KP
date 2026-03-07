@@ -922,7 +922,7 @@ async function submitKP() {
     ses_type:           val("ses_type") === "ground" ? "Наземна" : "Дахова",
     mount_types:        getMountEntries(),
     material_type:      val("material_type") === "dc_ac" ? "DC та AC" : "DC",
-    power_regulation:   val("power_regulation"),
+    power_control:      val("power_control"),
     monitoring_device:  val("monitoring_device"),
 
     currency:           state.currency,

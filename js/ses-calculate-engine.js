@@ -131,7 +131,7 @@ window.SESCalculateEngine = (function () {
     });
 
     // Фіксовані категорії (не змінюємо при ітерації)
-    const FIXED_TYPES = new Set(['panel', 'inverter', 'monitoring', 'power_regulation']);
+    const FIXED_TYPES = new Set(['panel', 'inverter', 'monitoring', 'power_control']);
 
     const MARKUP_LIMITS = {
       mounting:    catalog.markup_limits?.mounting   || [1.0, 7.1875],
@@ -190,9 +190,9 @@ window.SESCalculateEngine = (function () {
       }
 
       // Регулювання потужності
-      const prEntry = (catalog.power_regulation || []).find(m => m.name === p.power_regulation);
+      const prEntry = (catalog.power_control || []).find(m => m.name === p.power_control);
       if (prEntry) {
-        addLine('power_regulation', prEntry.name, prEntry.buy_usd, prEntry.markup,
+        addLine('power_control', prEntry.name, prEntry.buy_usd, prEntry.markup,
           1, 'компл.', `Регулювання потужності ${prEntry.name}`);
       }
 
