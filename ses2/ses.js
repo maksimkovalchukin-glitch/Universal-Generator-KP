@@ -878,8 +878,13 @@ async function submitKP() {
   // Налаштування з localStorage (адмін-панель)
   const settings  = JSON.parse(localStorage.getItem('rayton_settings') || '{}');
   const rates     = JSON.parse(localStorage.getItem('rayton_rates')    || '{}');
-  const allMgrs   = sesManagersCache.length ? sesManagersCache : JSON.parse(localStorage.getItem('rayton_managers') || '[]');
-  const currentMgr = allMgrs.find(m => m.name === val("manager")) || {};
+  // Читаємо phone/email з DOM (dataset) — як в UZE, не залежить від localStorage
+  const managerSel = document.getElementById('manager');
+  const managerOpt = managerSel?.options[managerSel.selectedIndex];
+  const currentMgr = {
+    phone: managerOpt?.dataset?.phone || '',
+    email: managerOpt?.dataset?.email || '',
+  };
 
   const panelLabel = state.mode === "manual"
     ? PANELS.find(p => p.name === val("manual_module"))?.label || ""
@@ -1062,9 +1067,11 @@ async function loadManagers() {
   const sel    = document.getElementById('manager');
   sel.innerHTML = '<option value="">Оберіть менеджера</option>';
   active.forEach(m => {
-    const opt       = document.createElement('option');
-    opt.value       = m.name;
-    opt.textContent = m.name;
+    const opt         = document.createElement('option');
+    opt.value         = m.name;
+    opt.textContent   = m.name;
+    opt.dataset.phone = m.phone || '';
+    opt.dataset.email = m.email || '';
     if (tgUser?.username && m.telegram && tgUser.username.toLowerCase() === m.telegram.toLowerCase()) {
       opt.selected = true;
     }
