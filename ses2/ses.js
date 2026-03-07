@@ -1060,6 +1060,16 @@ function showError(msg) {
 const SES_MANAGERS_STORAGE = 'rayton_managers';
 let sesManagersCache = []; // зберігаємо в пам'яті — не залежимо від перезапису localStorage
 
+const DEFAULT_MANAGERS = [
+  { name: 'Петров Дмитро',        phone: '+38 (063) 847-49-83', email: 'd.petrov@rayton.com.ua', telegram: '', active: true },
+  { name: 'Тубіш Микола',         phone: '+38 (067) 197-57-23', email: 'mt@rayton.com.ua',        telegram: '', active: true },
+  { name: 'Сидоров Максим',       phone: '+38 (063) 847-49-76', email: 'ms@rayton.com.ua',        telegram: '', active: true },
+  { name: 'Достовалов Олександр', phone: '+38 (063) 847-49-77', email: 'od@rayton.com.ua',        telegram: '', active: true },
+  { name: 'Стоцький Віталій',     phone: '+38 (067) 349-79-33', email: 'vs@rayton.com.ua',        telegram: '', active: true },
+  { name: 'Павлов Дмитро',        phone: '+38 (063) 847-49-76', email: 'dp@rayton.com.ua',        telegram: '', active: true },
+  { name: 'Лисенко Юрій',         phone: '+38 (063) 847-49-82', email: 'yl@rayton.com.ua',        telegram: '', active: true },
+];
+
 async function loadManagers() {
   // Читаємо localStorage ДО запиту до n8n — CatalogAPI може його перезаписати
   let existingList = [];
@@ -1078,6 +1088,10 @@ async function loadManagers() {
   } catch {
     list = existingList;
   }
+
+  // Якщо контактів немає — підставити дефолтний список (як в UZE)
+  const hasContacts = list.some(m => m.phone || m.email);
+  if (!hasContacts) list = DEFAULT_MANAGERS;
 
   const active = list.filter(m => m.active !== false);
   sesManagersCache = active; // зберігаємо для submitKP
