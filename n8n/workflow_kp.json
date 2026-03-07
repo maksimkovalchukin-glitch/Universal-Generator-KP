@@ -644,7 +644,7 @@
         "chatId": "={{ $('SES: Calculate').first().json.chat_id }}",
         "binaryData": true,
         "additionalFields": {
-          "caption": "=КП_СЕС_Рейтон готово! ✅\n\n📋 Проєкт: {{ $('SES: Calculate').first().json.project_name }}\n👤 Менеджер: {{ $('SES: Calculate').first().json.manager }}\n📍 Регіон: {{ $('SES: Calculate').first().json.region }}\n⚡ Потужність: {{ $('SES: Calculate').first().json.power_label }}\n💰 Вартість: {{ $('SES: Calculate').first().json.total_display }}\n💵 Ціна/кВт: {{ $('SES: Calculate').first().json.price_per_kw_display }}"
+          "caption": "={{ `КП_СЕС_Рейтон готово! ✅\n\n📋 Проєкт: ${$('SES: Calculate').first().json.project_name}\n👤 Менеджер: ${$('SES: Calculate').first().json.manager}\n📍 Регіон: ${$('SES: Calculate').first().json.region}\n⚡ Потужність: ${$('SES: Calculate').first().json.power_label}\n💰 Вартість: ${$('SES: Calculate').first().json.total_display}\n💵 Ціна/кВт: ${$('SES: Calculate').first().json.price_per_kw_display}` }}"
         }
       },
       "id": "876064e2-c110-4cc4-bd6c-d25aa9f43232",
